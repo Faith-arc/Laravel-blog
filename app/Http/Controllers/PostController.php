@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Post;
+use App\Models\User;
+use App\Models\Category;
+
+class PostController extends Controller
+{
+    public function index()//method defaultnya
+    {
+
+        $title= '';
+        if(request('category')) {
+            $category = Category::firstWhere('slug', request('category'));
+            $title = ' in ' . $category->name;
+        }
+        if(request('author')) {
+            $author = User::firstWhere('username', request('author'));
+            $title = ' by ' . $author->name;
+        }
+
+        return view('blogs', [
+            "title" => "ALL POST",
+            "active" => 'blogs',
+            // "posts" => Post::all()
+            "posts" => Post::latest()->filter(request(['search', 'category', 'author']))->paginate(7)->withQueryString()
+        ]);
+    }
+
+    public function show(Post $post)
+    {
+        return view('posts', [
+            "title" => "Single Post",
+            "active" => 'blogs',
+            "post" => $post
+        ]);
+    }
+}
